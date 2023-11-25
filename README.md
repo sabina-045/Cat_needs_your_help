@@ -1,1 +1,0 @@
-# QRkot_spreadseets
