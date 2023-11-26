@@ -93,8 +93,8 @@ class CRUDCharityProject(CRUDBase):
         spreadsheetid = await spreadsheets_create(wrapper_services)
         await set_user_permissions(spreadsheetid, wrapper_services)
         await spreadsheets_update_value(spreadsheetid,
-                                    sorted_projects_list,
-                                    wrapper_services)
+                                        sorted_projects_list,
+                                        wrapper_services)
 
         return sorted_projects_list
 
