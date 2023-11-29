@@ -24,8 +24,7 @@ class InvestingService:
         main_object_raw = obj_in.dict()
         main_object_raw['create_date'] = datetime.now()
         if 'user' in kwargs:
-            user = kwargs['user']
-            main_object_raw['user_id'] = user.id
+            main_object_raw['user_id'] = kwargs['user'].id
             model = CharityProject
             main_object = Donation(**main_object_raw)
         else:
