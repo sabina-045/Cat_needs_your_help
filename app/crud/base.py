@@ -61,7 +61,7 @@ class CRUDBase:
             self,
             obj_id: int,
             session: AsyncSession,
-    ) -> None | object:
+    ) -> tuple[None, object]:
         """Получение объекта по id либо 404."""
         db_objs_raw = await session.execute(
             select(self.model).where(self.model.id == obj_id))
