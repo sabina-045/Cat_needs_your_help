@@ -9,6 +9,7 @@ from app.schemas.charity_project import (
     CharityProjectUpdate)
 from app.core.user import current_superuser
 from app.models import CharityProject
+from app.services.investing_service import investing_service
 
 
 router = APIRouter()
@@ -24,8 +25,8 @@ async def create_new_charityproject(
 ) -> CharityProject:
     """Создание проекта. Только для суперюзеров."""
 
-    return await charityproject_crud.create_with_investing(
-        project, session)
+    return await investing_service.create_with_investing(
+        obj_in=project, session=session)
 
 
 @router.get('/',
@@ -49,7 +50,8 @@ async def update_project(
 ) -> CharityProject:
     """Обновление данных о проекте. Только для суперюзеров."""
 
-    return await charityproject_crud.update(project_id, obj_in, session)
+    return await investing_service.update_project(
+        project_id, obj_in, session)
 
 
 @router.delete('/{project_id}',
@@ -61,4 +63,4 @@ async def remove_project(
 ) -> CharityProject:
     """Удаление проекта. Только для суперюзеров."""
 
-    return await charityproject_crud.remove(project_id, session)
+    return await investing_service.remove_project(project_id, session)
