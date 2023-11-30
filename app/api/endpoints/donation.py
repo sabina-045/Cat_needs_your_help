@@ -6,7 +6,7 @@ from app.core.user import current_superuser, current_user
 from app.core.db import get_async_session
 from app.crud.donation import donation_crud
 from app.schemas.donation import DonationCreate, UserDonation, DonationGet
-from app.services.investing_service import investing_service
+from app.services.donation_service import donation_service
 
 
 router = APIRouter()
@@ -34,8 +34,8 @@ async def create_new_donation(
 ) -> Donation:
     """Создание пожертвования."""
 
-    return await investing_service.create_with_investing(
-        obj_in=donation, user=user, session=session)
+    return await donation_service.create_with_investing(
+        obj_in=donation, session=session, user=user, )
 
 
 @router.get('/my',

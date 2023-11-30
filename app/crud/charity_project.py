@@ -18,7 +18,7 @@ class CRUDCharityProject(CRUDBase):
 
         return db_objs_raw.scalars().all()
 
-    async def check_unique_name(
+    async def is_exists_project_name(
             self,
             data: dict,
             session: AsyncSession
@@ -32,6 +32,9 @@ class CRUDCharityProject(CRUDBase):
             raise HTTPException(
                 status_code=400,
                 detail='Проект с таким именем уже существует!')
+        else:
+
+            return True
 
 
 charityproject_crud = CRUDCharityProject(CharityProject)

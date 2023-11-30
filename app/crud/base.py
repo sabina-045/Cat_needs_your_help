@@ -1,6 +1,5 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import HTTPException
 
 
 class CRUDBase:
@@ -57,22 +56,6 @@ class CRUDBase:
         await session.delete(db_obj)
         await session.commit()
 
-    async def get_object_or_404(
-            self,
-            obj_id: int,
-            session: AsyncSession,
-    ) -> tuple[None, object]:
-        """Получение объекта по id либо 404."""
-        db_objs_raw = await session.execute(
-            select(self.model).where(self.model.id == obj_id))
-        db_obj = db_objs_raw.scalars().first()
-        if not db_obj:
-            raise HTTPException(
-                status_code=404,
-                detail='Такой проект не найден.')
-
-        return db_obj
-
     async def find_oldest_obj(
             self,
             obj: object,
@@ -80,7 +63,7 @@ class CRUDBase:
     ) -> object:
         """Поиск самого старого открытого объекта в бд."""
         objects_list = await session.execute(
-            select(obj).where(obj.fully_invested is not True).order_by(
+            select(obj).where(obj.fully_invested.is_(False)).order_by(
                 obj.create_date))
 
         return objects_list.scalars().first()
