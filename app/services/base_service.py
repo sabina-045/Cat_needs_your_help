@@ -30,7 +30,7 @@ class ProjectDonationBase:
                 main_object_raw, session)
             model = Donation
             main_object = CharityProject(**main_object_raw)
-        while main_object.fully_invested is False:
+        while main_object.fully_invested is not True:
             second_object = await CRUDBase.find_oldest_obj(
                 self, model, session)
             if second_object:
