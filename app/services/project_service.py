@@ -4,54 +4,82 @@ from fastapi import HTTPException
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import CharityProject
+from app.models import Donation, CharityProject
 from app.crud.charity_project import charityproject_crud
 from app.services.constants import INVESTED_AMOUNT_DEFAULT
 from app.schemas.charity_project import CharityProjectUpdate
-from app.services.base_service import ProjectDonationBase
+from app.services.investing_service import investment_counting
+from app.crud.base import CRUDBase
 
 
-class ProjectService(ProjectDonationBase):
+class ProjectService:
+    def __init__(self, session: AsyncSession) -> None:
+        self.session = session
+
+    async def create(
+            self,
+            obj_in: object,
+    ) -> CharityProject:
+        """Создание проекта."""
+        obj_in_data = obj_in.dict()
+        obj_in_data['create_date'] = datetime.now()
+        await charityproject_crud.is_exists_project_name(
+            obj_in_data, self.session)
+        charityproject = CharityProject(**obj_in_data)
+        await CRUDBase.create(self, charityproject, self.session)
+        await self._investing(charityproject)
+
+        return charityproject
+
+    async def _investing(self, charityproject):
+        """Запуск инвестирования."""
+        while charityproject.fully_invested is not True:
+            donation = await CRUDBase.find_oldest_obj(
+                self, Donation, self.session)
+            if donation:
+                investment_counting(charityproject, donation)
+                self.session.add_all([charityproject, donation])
+            else:
+                self.session.add(charityproject)
+                break
+        await CRUDBase.create(self, charityproject, self.session)
+
+        return charityproject
 
     async def update_project(
             self,
             obj_id: int,
             obj_in: CharityProjectUpdate,
-            session: AsyncSession,
     ) -> CharityProject:
         """Обновление проекта. Проект должен быть открытым.
         Новая требуемая сумма не должна быть меньше инвестированной."""
-        db_obj = await self.get_object_or_404(obj_id, session)
+        db_obj = await charityproject_crud.get_object_or_404(obj_id, self.session)
         self._check_updating_project_is_not_closed(db_obj)
         obj_data = jsonable_encoder(db_obj)
         update_data = obj_in.dict(exclude_unset=True, exclude_none=True)
         if self._check_item_in_update_data_and_updated(
                 update_data, db_obj, name='name'):
             await charityproject_crud.is_exists_project_name(
-                update_data, session)
+                update_data, self.session)
         if self._check_item_in_update_data_and_updated(
                 update_data, db_obj, name='full_amount'):
             self._check_new_full_amount_is_bigger_than_invested_amount(
                 update_data, db_obj)
             self._change_obj_if_new_full_amount_is_equal_invested_amount(
                 update_data, db_obj)
-        for field in obj_data:
-            if field in update_data:
-                setattr(db_obj, field, update_data[field])
-        await charityproject_crud.update(db_obj, session)
+        await charityproject_crud.update(db_obj, obj_data, update_data, self.session)
 
         return db_obj
 
     async def remove_project(
             self,
             obj_id: int,
-            session: AsyncSession,
     ) -> CharityProject:
         """Удаление проекта. Проект должен быть открытым и без инвестиций."""
-        db_obj = await self.get_object_or_404(obj_id, session)
+        db_obj = await charityproject_crud.get_object_or_404(obj_id, self.session)
 
         self._check_deleting_project_is_not_closed_and_has_no_investments(db_obj)
-        await charityproject_crud.remove(db_obj, session)
+        await charityproject_crud.remove(db_obj, self.session)
 
         return db_obj
 
@@ -119,6 +147,3 @@ class ProjectService(ProjectDonationBase):
             if data['name'] != obj.name:
 
                 return True
-
-
-project_service = ProjectService()

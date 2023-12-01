@@ -36,5 +36,19 @@ class CRUDCharityProject(CRUDBase):
 
             return True
 
+    async def get_object_or_404(
+            self,
+            obj_id: int,
+            session: AsyncSession,
+    ) -> tuple[None, object]:
+        """Получение проекта по id либо 404."""
+        db_obj = await self.get(obj_id, session)
+        if not db_obj:
+            raise HTTPException(
+                status_code=404,
+                detail='Такой проект не найден.')
+
+        return db_obj
+
 
 charityproject_crud = CRUDCharityProject(CharityProject)

@@ -30,19 +30,25 @@ class CRUDBase:
 
     async def create(
             self,
-            main_object: object,
+            obj: object,
             session: AsyncSession,
     ) -> None:
         """Создание объекта."""
+        session.add(obj)
         await session.commit()
-        await session.refresh(main_object)
+        await session.refresh(obj)
 
     async def update(
             self,
-            db_obj: object,
+            db_obj,
+            obj_data,
+            update_data,
             session: AsyncSession,
     ) -> None:
         """Обновление объекта."""
+        for field in obj_data:
+            if field in update_data:
+                setattr(db_obj, field, update_data[field])
         session.add(db_obj)
         await session.commit()
         await session.refresh(db_obj)

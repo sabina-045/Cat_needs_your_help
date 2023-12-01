@@ -4,47 +4,45 @@ from app.models import CharityProject, Donation
 
 
 def investment_counting(
-        main_object: object,
-        second_object: object
+        charityproject: object,
+        donation: object
 ) -> list[CharityProject, Donation]:
     """Подсчет инвестиций."""
-    if main_object.invested_amount:
-        main_object_sum = (main_object.full_amount -
-                           main_object.invested_amount)
+    if charityproject.invested_amount:
+        charityproject_diff = (charityproject.full_amount -
+                               charityproject.invested_amount)
     else:
-        main_object_sum = main_object.full_amount
-    if second_object.invested_amount:
-        second_object_sum = (second_object.full_amount -
-                             second_object.invested_amount)
+        charityproject_diff = charityproject.full_amount
+    if donation.invested_amount:
+        donation_diff = (donation.full_amount -
+                         donation.invested_amount)
     else:
-        second_object_sum = second_object.full_amount
+        donation_diff = donation.full_amount
 
-    if main_object_sum < second_object_sum:
-        main_object.fully_invested = True
-        main_object.close_date = datetime.now()
-        main_object.invested_amount = main_object.full_amount
-        if second_object.invested_amount:
-            second_object.invested_amount = (second_object.invested_amount +
-                                             main_object_sum)
+    if charityproject_diff < donation_diff:
+
+        charityproject.fully_invested = True
+        charityproject.close_date = datetime.now()
+        charityproject.invested_amount = charityproject.full_amount
+        if donation.invested_amount:
+            donation.invested_amount = (donation.invested_amount +
+                                        charityproject_diff)
         else:
-            second_object.invested_amount = main_object_sum
+            donation.invested_amount = charityproject_diff
 
-    if main_object_sum > second_object_sum:
-        if main_object.invested_amount:
-            main_object.invested_amount = (main_object.invested_amount +
-                                           second_object_sum)
+    if charityproject_diff >= donation_diff:
+
+        donation.fully_invested = True
+        donation.close_date = datetime.now()
+        donation.invested_amount = donation.full_amount
+        if charityproject.invested_amount:
+            charityproject.invested_amount = (charityproject.invested_amount +
+                                              donation_diff)
         else:
-            main_object.invested_amount = second_object_sum
-            second_object.fully_invested = True
-            second_object.close_date = datetime.now()
-            second_object.invested_amount = second_object.full_amount
+            charityproject.invested_amount = donation_diff
 
-    if main_object_sum == second_object_sum:
-        main_object.fully_invested = True
-        second_object.fully_invested = True
-        main_object.close_date = datetime.now()
-        second_object.close_date = datetime.now()
-        main_object.invested_amount = main_object.full_amount
-        second_object.invested_amount = second_object.full_amount
+        if charityproject.full_amount == charityproject.invested_amount:
+            charityproject.fully_invested = True
+            charityproject.close_date = datetime.now()
 
-    return main_object, second_object
+    return charityproject, donation

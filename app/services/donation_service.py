@@ -1,8 +1,42 @@
-from app.services.base_service import ProjectDonationBase
+from datetime import datetime
+
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models import User, Donation, CharityProject
+from app.crud.base import CRUDBase
+from app.services.investing_service import investment_counting
 
 
-class DonationService(ProjectDonationBase):
-    pass
+class DonationService:
+    def __init__(self, session: AsyncSession) -> None:
+        self.session = session
 
+    async def create(
+            self,
+            obj_in: object,
+            user: User,
+    ) -> Donation:
+        """Создание доната."""
+        obj_in_data = obj_in.dict()
+        obj_in_data['user_id'] = user.id
+        obj_in_data['create_date'] = datetime.now()
+        donation = Donation(**obj_in_data)
+        await CRUDBase.create(self, donation, self.session)
+        await self._investing(donation)
 
-donation_service = DonationService()
+        return donation
+
+    async def _investing(self, donation):
+        """Запуск инвестирования."""
+        while donation.fully_invested is not True:
+            charityproject = await CRUDBase.find_oldest_obj(
+                self, CharityProject, self.session)
+            if charityproject:
+                investment_counting(charityproject, donation)
+                self.session.add_all([charityproject, donation])
+            else:
+                self.session.add(donation)
+                break
+        await CRUDBase.create(self, donation, self.session)
+
+        return donation
