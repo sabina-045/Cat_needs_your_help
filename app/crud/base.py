@@ -46,7 +46,7 @@ class CRUDBase:
             obj: object,
             session: AsyncSession
     ) -> None:
-        """Коммит объектов после
+        """Сохранение обновл. объектов после
         подсчета инвестиций."""
         await session.commit()
         await session.refresh(obj)
