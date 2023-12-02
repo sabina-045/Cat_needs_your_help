@@ -8,7 +8,7 @@ from app.models import Donation, CharityProject
 from app.crud.charity_project import charityproject_crud
 from app.services.constants import INVESTED_AMOUNT_DEFAULT
 from app.schemas.charity_project import CharityProjectUpdate
-from app.services.investing_service import investment_counting
+from app.services.investing_service import investment
 from app.crud.base import CRUDBase
 
 
@@ -36,14 +36,14 @@ class ProjectService:
             donation = await CRUDBase.find_oldest_obj(
                 self, Donation, self.session)
             if donation:
-                investment_counting(charityproject, donation)
+                investment.investment_counting(charityproject, donation)
                 self.session.add_all([charityproject, donation])
             else:
                 self.session.add(charityproject)
                 break
 
-        await charityproject_crud.save_obj_changes_after_invest_counting(
-            charityproject, self.session)
+        await self.session.commit()
+        await self.session.refresh(charityproject)
 
         return charityproject
 

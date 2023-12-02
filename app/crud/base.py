@@ -41,16 +41,6 @@ class CRUDBase:
 
         return obj
 
-    async def save_obj_changes_after_invest_counting(
-            self,
-            obj: object,
-            session: AsyncSession
-    ) -> None:
-        """Сохранение обновл. объектов после
-        подсчета инвестиций."""
-        await session.commit()
-        await session.refresh(obj)
-
     async def update(
             self,
             db_obj,

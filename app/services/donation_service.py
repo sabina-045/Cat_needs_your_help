@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import User, Donation, CharityProject
 from app.crud.base import CRUDBase
-from app.services.investing_service import investment_counting
+from app.services.investing_service import investment
 from app.crud.donation import donation_crud
 
 
@@ -32,12 +32,13 @@ class DonationService:
             charityproject = await CRUDBase.find_oldest_obj(
                 self, CharityProject, self.session)
             if charityproject:
-                investment_counting(charityproject, donation)
+                investment.investment_counting(charityproject, donation)
                 self.session.add_all([charityproject, donation])
             else:
                 self.session.add(donation)
                 break
-        await donation_crud.save_obj_changes_after_invest_counting(
-            donation, self.session)
+
+        await self.session.commit()
+        await self.session.refresh(donation)
 
         return donation
