@@ -30,11 +30,24 @@ class CRUDBase:
 
     async def create(
             self,
-            obj: object,
+            obj_in_data: dict,
             session: AsyncSession,
     ) -> None:
         """Создание объекта."""
+        obj = self.model(**obj_in_data)
         session.add(obj)
+        await session.commit()
+        await session.refresh(obj)
+
+        return obj
+
+    async def save_obj_changes_after_invest_counting(
+            self,
+            obj: object,
+            session: AsyncSession
+    ) -> None:
+        """Коммит объектов после
+        подсчета инвестиций."""
         await session.commit()
         await session.refresh(obj)
 

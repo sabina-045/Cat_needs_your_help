@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import User, Donation, CharityProject
 from app.crud.base import CRUDBase
 from app.services.investing_service import investment_counting
+from app.crud.donation import donation_crud
 
 
 class DonationService:
@@ -20,8 +21,7 @@ class DonationService:
         obj_in_data = obj_in.dict()
         obj_in_data['user_id'] = user.id
         obj_in_data['create_date'] = datetime.now()
-        donation = Donation(**obj_in_data)
-        await CRUDBase.create(self, donation, self.session)
+        donation = await donation_crud.create(obj_in_data, self.session)
         await self._investing(donation)
 
         return donation
@@ -37,6 +37,7 @@ class DonationService:
             else:
                 self.session.add(donation)
                 break
-        await CRUDBase.create(self, donation, self.session)
+        await donation_crud.save_obj_changes_after_invest_counting(
+            donation, self.session)
 
         return donation

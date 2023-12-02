@@ -42,24 +42,24 @@ async def get_all_projects(
 @router.patch('/{project_id}',
               response_model=CharityProjectDB,
               dependencies=[Depends(current_superuser)])
-async def update_project(
+async def update(
         project_id: int,
         obj_in: CharityProjectUpdate,
         session: AsyncSession = Depends(get_async_session),
 ) -> CharityProject:
     """Обновление данных о проекте. Только для суперюзеров."""
 
-    return await ProjectService(session).update_project(
+    return await ProjectService(session).update(
         project_id, obj_in)
 
 
 @router.delete('/{project_id}',
                response_model=CharityProjectDB,
                dependencies=[Depends(current_superuser)])
-async def remove_project(
+async def remove(
         project_id: int,
         session: AsyncSession = Depends(get_async_session),
 ) -> CharityProject:
     """Удаление проекта. Только для суперюзеров."""
 
-    return await ProjectService(session).remove_project(project_id)
+    return await ProjectService(session).remove(project_id)

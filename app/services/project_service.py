@@ -22,11 +22,10 @@ class ProjectService:
     ) -> CharityProject:
         """Создание проекта."""
         obj_in_data = obj_in.dict()
-        obj_in_data['create_date'] = datetime.now()
         await charityproject_crud.is_exists_project_name(
             obj_in_data, self.session)
-        charityproject = CharityProject(**obj_in_data)
-        await CRUDBase.create(self, charityproject, self.session)
+        obj_in_data['create_date'] = datetime.now()
+        charityproject = await charityproject_crud.create(obj_in_data, self.session)
         await self._investing(charityproject)
 
         return charityproject
@@ -42,11 +41,13 @@ class ProjectService:
             else:
                 self.session.add(charityproject)
                 break
-        await CRUDBase.create(self, charityproject, self.session)
+
+        await charityproject_crud.save_obj_changes_after_invest_counting(
+            charityproject, self.session)
 
         return charityproject
 
-    async def update_project(
+    async def update(
             self,
             obj_id: int,
             obj_in: CharityProjectUpdate,
@@ -71,7 +72,7 @@ class ProjectService:
 
         return db_obj
 
-    async def remove_project(
+    async def remove(
             self,
             obj_id: int,
     ) -> CharityProject:
