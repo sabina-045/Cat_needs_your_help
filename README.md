@@ -48,6 +48,11 @@ uvicorn app.main:app --reload
 
 Не забываем про миграции
 
+</br>
+
+> Команда создателей:
+Яндекс Практикум, Сабина Гаджиева.
+
 ```
 alembic revision --autogenerate -m "First migration"
 alembic upgrade head
