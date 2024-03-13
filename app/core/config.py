@@ -5,7 +5,7 @@ from pydantic import BaseSettings, EmailStr
 
 
 class Settings(BaseSettings):
-    app_title: str = 'QRKot'
+    app_title: str = 'Cat_needs_your_help'
     database_url: str = os.getenv('DATABASE_URL', default='sqlite+aiosqlite:///./fastapi.db')
     secret: str = os.getenv('SECRET', default='MY_SECRET_KEY')
     first_superuser_email: Optional[EmailStr] = None
